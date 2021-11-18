@@ -1,7 +1,9 @@
+import Context from "../../Context"
 import { CreateShaderFromString, CreateShaderFromFile } from "../../Util/CreateShader"
 import { IShader } from "./IShader"
 import { Program } from "./Program"
 
+const { gl } = Context.documentInstance
 export class ResourceHolder {
     private static _currentProgram: Program
 
@@ -22,11 +24,13 @@ export class ResourceHolder {
         return this.programs.get(name)!
     }
 
-    public static getOrCreateProgram(name: string, vertex: IShader, fragment: IShader): Program {
+    public static getOrCreateProgram(name: string, vertex: string, fragment: string): Program {
         let exist = this.getProgram(name)
         if(exist) return exist
 
-        return this.CreateProgram(name, vertex, fragment)
+        return this.CreateProgram(name, 
+            this.CreateShaderFromString(gl.VERTEX_SHADER, vertex), 
+            this.CreateShaderFromString(gl.FRAGMENT_SHADER, fragment))
     }
     
     public static async CreateShaderFromFile(type: number, path: string): Promise<IShader> {

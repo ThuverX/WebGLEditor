@@ -47,9 +47,13 @@ export class App {
     }
 
     protected SetGeneralAttributes() {
-        let coords = gl.getAttribLocation(ResourceHolder.WebGLProgram, 'a_position')
-        gl.vertexAttribPointer(coords, 2, gl.FLOAT, false, 0, 0)
-        gl.enableVertexAttribArray(coords)
+        let positionattribute = gl.getAttribLocation(ResourceHolder.WebGLProgram, 'a_position')
+        gl.vertexAttribPointer(positionattribute, 2, gl.FLOAT, false, 0, 0)
+        gl.enableVertexAttribArray(positionattribute)
+
+        let uvattribute = gl.getAttribLocation(ResourceHolder.WebGLProgram, 'a_texcoord')
+        gl.vertexAttribPointer(uvattribute, 2, gl.FLOAT, false, 0, 0)
+        gl.enableVertexAttribArray(uvattribute)
 
         this._resolutionuniform = gl.getUniformLocation(ResourceHolder.WebGLProgram, 'u_resolution')
         gl.uniform2f(this._resolutionuniform, canvas.width, canvas.height)
@@ -77,9 +81,12 @@ export class App {
 
         this.ClearScreen()
 
+        let dt = (t - this.previous_render_time) / 1000
+
+        console.log('fps', 1 / dt)
+
         this.SetGeneralAttributes()
-        this.render(t - this.start_time, 1 - (t - this.previous_render_time) / 1000)
-        gl.flush()
+        this.render(t - this.start_time, dt)
         
         this.previous_render_time = t
 

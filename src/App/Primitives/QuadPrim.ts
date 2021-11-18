@@ -9,7 +9,7 @@ const { gl } = Context.documentInstance
 
 export class QuadPrim {
 
-    private static QUAD_VERTS = [
+    public static QUAD_VERTS = [
         0, 0,
         1, 0,
         0, 1,
@@ -18,18 +18,27 @@ export class QuadPrim {
         1, 1
     ]
 
+    public static QUAD_UVS = [
+        0, 0,
+        0, 1,
+        1, 0,
+        0, 1,
+        1, 1,
+        1, 0,
+    ]
+
     private _pos: Point = Point.Make()
     private _size: Point = Point.Make(100)
 
     public program: string = "shader_basic"
 
-    private vertices: Array<number> = QuadPrim.QUAD_VERTS
-    private vertexBuffer = gl.createBuffer()
+    public static vertexBuffer = gl.createBuffer()
+    public static uvBuffer = gl.createBuffer()
 
     public set pos(point: Point.Resolvable) { this._pos = Point.Make(point) }
-    public get pos() { return this._pos }
+    public get pos(): Point { return this._pos }
     public set size(point: Point.Resolvable) { this._size = Point.Make(point) }
-    public get size() { return this._size }
+    public get size(): Point { return this._size }
 
     private attributes: ShaderAttributes = {
         'u_translation': {
@@ -66,8 +75,13 @@ export class QuadPrim {
 
         if(attr.type === 'uniform') {
             if(attr.kind.startsWith('vec')) {
-                // @ts-ignore
-                gl['uniform' + attr.kind.slice(-2)](gl.getUniformLocation(prog.get(), name), ...attr.value)
+                if(attr.array) {
+                    // @ts-ignore
+                    gl['uniform' + attr.kind.slice(-2) + 'v'](gl.getUniformLocation(prog.get(), name), new Float32Array(attr.value))
+                } else {
+                    // @ts-ignore
+                    gl['uniform' + attr.kind.slice(-2)](gl.getUniformLocation(prog.get(), name), ...attr.value)
+                }
             } else if(attr.kind === 'float') {
                 gl.uniform1f(gl.getUniformLocation(prog.get(), name), attr.value)
             } else if(attr.kind === 'int') {
@@ -91,9 +105,6 @@ export class QuadPrim {
     constructor(pos: Point.Resolvable, size: Point.Resolvable) {
         this.pos = pos
         this.size = size
-        
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW)
     }
 
     public draw(): void {
@@ -103,3 +114,9 @@ export class QuadPrim {
         gl.drawArrays(gl.TRIANGLES, 0, 6)
     }
 }
+
+gl.bindBuffer(gl.ARRAY_BUFFER, QuadPrim.vertexBuffer)
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(QuadPrim.QUAD_VERTS), gl.STATIC_DRAW)
+
+gl.bindBuffer(gl.ARRAY_BUFFER, QuadPrim.uvBuffer)
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(QuadPrim.QUAD_UVS), gl.STATIC_DRAW)
