@@ -43,5 +43,7 @@ export class ResourceHolder {
 
         return prog
     }
-
 }
+
+// @ts-ignore
+window.ResourceHolder = ResourceHolder

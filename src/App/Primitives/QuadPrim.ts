@@ -2,6 +2,7 @@ import Context from "../../Context";
 import { Geometry } from "../../Util/Geometry";
 import { Point } from "../../Util/Point";
 import { App } from "../App";
+import { Program } from "../Resource/Program";
 import { ResourceHolder } from "../Resource/ResourceHolder";
 import { ShaderAttribute, ShaderAttributes } from "../ShaderAttributes";
 
@@ -69,23 +70,23 @@ export class QuadPrim {
 
     }
 
-    public applyAttribute(name: string) {
-        let prog = ResourceHolder.getProgram(this.program)
+    public applyAttribute(prog: Program, name: string) {
         let attr = this.getAttribute(name)
+        let location = gl.getUniformLocation(prog.get(), name)
 
         if(attr.type === 'uniform') {
             if(attr.kind.startsWith('vec')) {
                 if(attr.array) {
                     // @ts-ignore
-                    gl['uniform' + attr.kind.slice(-2) + 'v'](gl.getUniformLocation(prog.get(), name), new Float32Array(attr.value))
+                    gl['uniform' + attr.kind.slice(-2) + 'v'](location, new Float32Array(attr.value))
                 } else {
                     // @ts-ignore
-                    gl['uniform' + attr.kind.slice(-2)](gl.getUniformLocation(prog.get(), name), ...attr.value)
+                    gl['uniform' + attr.kind.slice(-2)](location, ...attr.value)
                 }
             } else if(attr.kind === 'float') {
-                gl.uniform1f(gl.getUniformLocation(prog.get(), name), attr.value)
+                gl.uniform1f(location, attr.value)
             } else if(attr.kind === 'int') {
-                gl.uniform1i(gl.getUniformLocation(prog.get(), name), attr.value)
+                gl.uniform1i(location, attr.value)
             }
         } else {
 
@@ -98,7 +99,7 @@ export class QuadPrim {
 
         this.setAttributeValue('u_translation', [this._pos.x, this._pos.y, this._size.x, this._size.y])
         for(let key of Object.keys(this.attributes)) {
-            this.applyAttribute(key)
+            this.applyAttribute(prog, key)
         }
     }
     
