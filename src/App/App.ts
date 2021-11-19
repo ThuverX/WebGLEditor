@@ -30,6 +30,8 @@ export class App {
     }
 
     public async init() {
+        let start = performance.now()
+
         await this.create()
 
         gl.viewport(0, 0, canvas.width, canvas.height)
@@ -42,6 +44,8 @@ export class App {
         })
 
         this.kickstart()
+
+        console.log(`Startup took ${(performance.now() - start).toFixed(1)}ms`)
 
         return this
     }
@@ -65,7 +69,12 @@ export class App {
     private kickstart() {
         this.render_state = ERenderState.RUNNING
         this.start_time = Date.now()
+
+        gl.enable(gl.BLEND)
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+        
         this.loop()
+
     }
 
     public ClearScreen() {
@@ -83,7 +92,7 @@ export class App {
 
         let dt = (t - this.previous_render_time) / 1000
 
-        console.log('fps', 1 / dt)
+        // console.log('fps', 1 / dt)
 
         this.SetGeneralAttributes()
         this.render(t - this.start_time, dt)

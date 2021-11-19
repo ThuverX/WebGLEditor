@@ -1,65 +1,86 @@
 import { App } from "../App/App"
 import Context from "../Context"
+import { BufferFormat } from "./Buffer/BufferFormat"
+import { EditorBuffer } from "./Buffer/EditorBuffer"
+import { InputHandler } from "./Buffer/InputHandler"
 import { CharacterQuad } from "./CharacterQuad"
 import { FontFile, FontType } from "./Font/FontFile"
 
-const s = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WEBGL Editor</title>
-    <style>
-        canvas {
-            position: absolute;
-            left:0;
-            top:0;
-            width:100%;
-            height:100%;
-        }
-    </style>
-  <script type="module" crossorigin src="/assets/index.08f0c933.js"></script>
-  <link rel="modulepreload" href="/assets/vendor.0c272f2f.js">
-</head>
-<body>
-    
-</body>
-</html>
-`
+const window = Context.windowInstance
 
 export class EditorApp extends App {
 
+    private fontsize: number = 24
     private currentFont: FontFile = new FontFile(
         "FiraCode Nerdfont Mono",
         FontType.MSDF)
-    private drawbuffer: Array<CharacterQuad> = []
+    private activeEditorBuffer: EditorBuffer = new EditorBuffer()
+
+    private _QuadBuffer: Array<CharacterQuad> = []
 
     async create() {
         await this.currentFont.loaded
 
-        let start = performance.now()
+        InputHandler.Init()
 
-        const sentence = (str: string, line: number) => {
-            for(let i = 0; i < str.length; i++) {
-                if(str.charCodeAt(i) !== 32)
-                    this.drawbuffer.push(new CharacterQuad(this.currentFont, str.charCodeAt(i), 32, [i,line]))
+        InputHandler.OnKeyDown.subscribe((key: InputHandler.Key | null) => {
+            if(!key) return
+
+            this.activeEditorBuffer.Add(key)
+        })
+
+        let w = window.innerWidth / this.fontsize
+        let h = window.innerHeight / this.fontsize
+
+        for(let x = 0; x < w; x++) {
+            for(let y = 0; y < h; y++) {
+                this._QuadBuffer.push(new CharacterQuad(this.currentFont, -1, this.fontsize, [y, x]))
             }
         }
 
-        let text = s.split('\n')
+        // TODO: Figure out how to do this fucking shit
+        //       Pretty sure we should have some kind of big grid
+        //       And just update items in the grid
+        this.activeEditorBuffer.Buffer.subscribe((data: BufferFormat) => {
+            for(let i = 0; i < data.length; i++) {
+                if('value' in data[i]) {
+                    let string = data[i] as BufferFormat.String
+                    let codepoint = string.value.charCodeAt(0)
 
-        for(let i = 0; i < text.length; i++) {
-            sentence(text[i],i)
-        }
+                    if(this._QuadBuffer[i]) {
+                        if(this._QuadBuffer[i].codepoint !== codepoint) {
+                            this._QuadBuffer[i].codepoint = codepoint
+                        }
+                    }
+                }
+            }
+        })
 
-        console.log('full', performance.now() - start)
-        
-        this.clearColor = [0, 0, 0]
+
+        // const place = (key: string) => {
+        //     if(key !== ' ' && key.length === 1) {
+        //         this.drawbuffer.push(new CharacterQuad(this.currentFont, key.charCodeAt(0), 24, [this.pointer,0]))
+        //     }
+
+        //     this.pointer++
+        // }
+
+        // window.addEventListener('keydown', (event) => {
+        //     place(event.key)
+        // })
+        // place(' ')
+        // place('\ue0c4')
+        // place(' ')
+        // place(' ')
+        // place('\ue718')
+        // place('\ue719')
+
+        this.clearColor = [20, 20, 20]
     }
     
     render(t: number, dt: number) {
-        for(let char of this.drawbuffer) char.draw()
+        for(let i = 0; i < this._QuadBuffer.length; i++) {
+            this._QuadBuffer[i].draw()
+        }
     }
 }

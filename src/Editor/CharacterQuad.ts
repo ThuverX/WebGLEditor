@@ -16,6 +16,13 @@ export class CharacterQuad extends QuadPrim {
     private _charSize: number = 10
     private _fontfile: FontFile
 
+    public set codepoint(codepoint: number) {
+        this._codepoint = codepoint
+        this.updateGlyph()
+    }
+    public get codepoint(): number { return this._codepoint }
+    public get location(): Point { return this._location }
+
     constructor(fontfile: FontFile, codepoint: number, size: number, location: Point.Resolvable = 0) {
         super(0, size)
 
@@ -30,6 +37,10 @@ export class CharacterQuad extends QuadPrim {
 
         this.program = 'char_renderer'
         
+        this.updateGlyph()
+    }
+
+    private updateGlyph() {
         let glyph = this._fontfile.chars?.glyphs.find(x => x.unicode == this._codepoint)!
         if(glyph && glyph.atlasBounds) {
 
@@ -38,13 +49,13 @@ export class CharacterQuad extends QuadPrim {
             let planeBounds = glyph.planeBounds!
 
             this.size = [
-                (planeBounds.right - planeBounds.left) * size,
-                (planeBounds.top - planeBounds.bottom) * size
+                (planeBounds.right - planeBounds.left) * this._charSize,
+                (planeBounds.top - planeBounds.bottom) * this._charSize
             ]
 
             this.pos = [
-                (this._location.x * size * glyph.advance) + this.pos.x + planeBounds.left * size ,
-                (this._location.y * size * this._fontfile.chars?.metrics.lineHeight!) + this.pos.y + (1 - planeBounds.top) * size]
+                (this._location.x * this._charSize * glyph.advance) + this.pos.x + planeBounds.left * this._charSize ,
+                (this._location.y * this._charSize * this._fontfile.chars?.metrics.lineHeight!) + this.pos.y + (1 - planeBounds.top) * this._charSize]
 
             let x = (atlasBounds.left) / atlasSize.x
             let y = (atlasSize.y - atlasBounds.top)  / atlasSize.y
@@ -68,6 +79,12 @@ export class CharacterQuad extends QuadPrim {
                 type: 'uniform',
                 kind: 'int',
                 value: 0
+            })
+        } else {
+            this.setAttribute('u_codepointmod', {
+                type: 'uniform',
+                kind: 'vec4f',
+                value: [0, 0, 0, 0]
             })
         }
     }
