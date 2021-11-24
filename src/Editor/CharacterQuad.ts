@@ -7,8 +7,6 @@ import { FontFile } from "./Font/FontFile";
 
 import char_renderer_frag from './Resources/Shaders/char_renderer.frag.glsl?raw'
 
-const { gl } = Context.documentInstance
-
 export class CharacterQuad extends QuadPrim {
 
     private _location: Point = Point.Make(0)
@@ -22,6 +20,11 @@ export class CharacterQuad extends QuadPrim {
     }
     public get codepoint(): number { return this._codepoint }
     public get location(): Point { return this._location }
+    public get charsize(): number { return this._charSize }
+    public set charsize(size: number) {
+        this._charSize = size
+        this.updateGlyph()
+    }
 
     constructor(fontfile: FontFile, codepoint: number, size: number, location: Point.Resolvable = 0) {
         super(0, size)
@@ -54,8 +57,8 @@ export class CharacterQuad extends QuadPrim {
             ]
 
             this.pos = [
-                (this._location.x * this._charSize * glyph.advance) + this.pos.x + planeBounds.left * this._charSize ,
-                (this._location.y * this._charSize * this._fontfile.chars?.metrics.lineHeight!) + this.pos.y + (1 - planeBounds.top) * this._charSize]
+                (this._location.x * this._charSize * glyph.advance) + planeBounds.left * this._charSize ,
+                (this._location.y * this._charSize * this._fontfile.chars?.metrics.lineHeight!) + (1 - planeBounds.top) * this._charSize]
 
             let x = (atlasBounds.left) / atlasSize.x
             let y = (atlasSize.y - atlasBounds.top)  / atlasSize.y

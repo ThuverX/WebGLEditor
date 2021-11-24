@@ -1,4 +1,4 @@
-import { BehaviorSubject, Subject } from "rxjs"
+import { BehaviorSubject } from "rxjs"
 import Context from "../../Context"
 
 const window = Context.windowInstance
@@ -8,11 +8,21 @@ export class InputHandler {
     // mods: shift, control, alt
     private static mods_down: [ boolean, boolean, boolean ] = [ false, false, false]
 
-    public static ACTIONS: Map<string, string> = new Map<string, string>([
-        [ JSON.stringify({ keyCode: 'Enter', mods: [ false, false, false ] }), 'ACT_NEWLINE' ],
-    ])
+    public static ACTIONS: Map<string, string> = new Map<string, string>()
 
     public static Init() {
+        {
+            this.RegisterAction({ keyCode: 'Enter', mods: [ false, false, false ] }, 'MAKE_NEWLINE')
+
+            this.RegisterAction({ keyCode: 'ArrowUp', mods: [ false, false, false ] }, 'MOVE_CURSOR_UP')
+            this.RegisterAction({ keyCode: 'ArrowDown', mods: [ false, false, false ] }, 'MOVE_CURSOR_DOWN')
+            this.RegisterAction({ keyCode: 'ArrowLeft', mods: [ false, false, false ] }, 'MOVE_CURSOR_LEFT')
+            this.RegisterAction({ keyCode: 'ArrowRight', mods: [ false, false, false ] }, 'MOVE_CURSOR_RIGHT')
+
+            this.RegisterAction({ keyCode: 'Backspace', mods: [ false, false, false ] }, 'DELETE_LEFT')
+            this.RegisterAction({ keyCode: 'Delete', mods: [ false, false, false ] }, 'DELETE_RIGHT')
+
+        }
         window.addEventListener('keydown',(event) => this.KeyDown(event.key))
         window.addEventListener('keyup',(event) => this.KeyUp(event.key))
     }

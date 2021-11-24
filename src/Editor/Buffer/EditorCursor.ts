@@ -17,4 +17,10 @@ export class EditorCursor {
         this._position.x += x
         this._position.y += y
     }
+
+    // Implement Safety Check
+    public Set(x: number, y: number = 0) {
+        this._position.x = x
+        this._position.y = y
+    }
 }

@@ -1,22 +1,22 @@
 import { App } from "../App/App"
-import Context from "../Context"
 import { BufferFormat } from "./Buffer/BufferFormat"
 import { EditorBuffer } from "./Buffer/EditorBuffer"
 import { InputHandler } from "./Buffer/InputHandler"
 import { CharacterQuad } from "./CharacterQuad"
+import { CursorQuad } from "./CursorQuad"
 import { FontFile, FontType } from "./Font/FontFile"
-
-const window = Context.windowInstance
 
 export class EditorApp extends App {
 
-    private fontsize: number = 24
-    private currentFont: FontFile = new FontFile(
+    public fontsize: number = 60
+    public currentFont: FontFile = new FontFile(
         "FiraCode Nerdfont Mono",
         FontType.MSDF)
+
     private activeEditorBuffer: EditorBuffer = new EditorBuffer()
 
-    private _QuadBuffer: Array<CharacterQuad> = []
+    private _QuadBuffer: Array<Array<CharacterQuad>> = []
+    private _CursorQuad: CursorQuad = new CursorQuad(this.currentFont, this.fontsize)
 
     async create() {
         await this.currentFont.loaded
@@ -29,58 +29,53 @@ export class EditorApp extends App {
             this.activeEditorBuffer.Add(key)
         })
 
-        let w = window.innerWidth / this.fontsize
-        let h = window.innerHeight / this.fontsize
-
-        for(let x = 0; x < w; x++) {
-            for(let y = 0; y < h; y++) {
-                this._QuadBuffer.push(new CharacterQuad(this.currentFont, -1, this.fontsize, [y, x]))
-            }
-        }
-
-        // TODO: Figure out how to do this fucking shit
-        //       Pretty sure we should have some kind of big grid
-        //       And just update items in the grid
         this.activeEditorBuffer.Buffer.subscribe((data: BufferFormat) => {
-            for(let i = 0; i < data.length; i++) {
-                if('value' in data[i]) {
-                    let string = data[i] as BufferFormat.String
-                    let codepoint = string.value.charCodeAt(0)
+            for(let y = 0; y < data.length; y++) {
+                for(let x = 0; x < data[y].length; x++) {
+                    let item = data[y][x]
+                    if(!this._QuadBuffer[y]) this._QuadBuffer[y] = []
 
-                    if(this._QuadBuffer[i]) {
-                        if(this._QuadBuffer[i].codepoint !== codepoint) {
-                            this._QuadBuffer[i].codepoint = codepoint
+                    if(item) {
+                        if(item.type === BufferFormat.BufferKeyType.STRING) {
+
+                            if(!this._QuadBuffer[y][x]) {
+                                this._QuadBuffer[y][x] = new CharacterQuad(this.currentFont, item.value.charCodeAt(0), this.fontsize, [x,y])
+                            }
+                            else {
+                                this._QuadBuffer[y][x].codepoint = item.value.charCodeAt(0)
+                            }
                         }
+                    }
+
+                }
+
+                if(data[y].length !== this._QuadBuffer[y].length) {
+                    for(let i = 0; i < Math.max(data[y].length, this._QuadBuffer[y].length + 1); i++) {
+                        if(!data[y][i]) this._QuadBuffer[y].splice(i, 1)
                     }
                 }
             }
+
         })
-
-
-        // const place = (key: string) => {
-        //     if(key !== ' ' && key.length === 1) {
-        //         this.drawbuffer.push(new CharacterQuad(this.currentFont, key.charCodeAt(0), 24, [this.pointer,0]))
-        //     }
-
-        //     this.pointer++
-        // }
-
-        // window.addEventListener('keydown', (event) => {
-        //     place(event.key)
-        // })
-        // place(' ')
-        // place('\ue0c4')
-        // place(' ')
-        // place(' ')
-        // place('\ue718')
-        // place('\ue719')
 
         this.clearColor = [20, 20, 20]
     }
     
     render(t: number, dt: number) {
-        for(let i = 0; i < this._QuadBuffer.length; i++) {
-            this._QuadBuffer[i].draw()
+        for(let y = 0; y < this._QuadBuffer.length; y++) {
+            if(this._QuadBuffer[y]) {
+                for(let x = 0; x < this._QuadBuffer[y].length; x++) {
+                    if(this._QuadBuffer[y][x]) {
+                        this._QuadBuffer[y][x].charsize = this.fontsize
+                        this._QuadBuffer[y][x].draw()
+                    }
+                }
+            }
         }
+
+        // this._CursorQuad.draw()
+        // this._CursorQuad.charsize = this.fontsize
+
+        // this._CursorQuad.location = this.activeEditorBuffer.Cursor
     }
 }

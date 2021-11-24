@@ -46,8 +46,6 @@ export class App {
         this.kickstart()
 
         console.log(`Startup took ${(performance.now() - start).toFixed(1)}ms`)
-
-        return this
     }
 
     protected SetGeneralAttributes() {
