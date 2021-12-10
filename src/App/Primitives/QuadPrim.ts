@@ -1,7 +1,5 @@
 import Context from "../../Context";
-import { Geometry } from "../../Util/Geometry";
 import { Point } from "../../Util/Point";
-import { App } from "../App";
 import { Program } from "../Resource/Program";
 import { ResourceHolder } from "../Resource/ResourceHolder";
 import { ShaderAttribute, ShaderAttributes } from "../ShaderAttributes";

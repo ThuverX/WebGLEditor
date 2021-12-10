@@ -13,6 +13,10 @@ export class EditorBuffer {
     public Buffer: BehaviorSubject<BufferFormat> = new BehaviorSubject<BufferFormat>([])
     public get Cursor(): EditorCursor { return this._cursor }
 
+    // TODO: Decouple screen buffer from editor logic
+    //       Use old editor code for string behaviour
+    //       Then push that array into the screen buffer
+    
     private createLine(index: number) {
         if(!this._buffer[index]) this._buffer[index] = []
     }

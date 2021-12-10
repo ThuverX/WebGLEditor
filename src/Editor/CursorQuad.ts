@@ -7,6 +7,7 @@ import { FontFile } from "./Font/FontFile";
 
 import cursor_renderer_frag from './Resources/Shaders/cursor_renderer.frag.glsl?raw'
 
+
 export class CursorQuad extends QuadPrim {
 
     private _location: Point = Point.Make(0)
@@ -34,6 +35,7 @@ export class CursorQuad extends QuadPrim {
         this.program = 'cursor_renderer'
         
         this.updateGlyph()
+
     }
 
     private updateGlyph() {

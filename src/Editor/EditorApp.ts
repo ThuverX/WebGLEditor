@@ -8,7 +8,7 @@ import { FontFile, FontType } from "./Font/FontFile"
 
 export class EditorApp extends App {
 
-    public fontsize: number = 60
+    public fontsize: number = 100
     public currentFont: FontFile = new FontFile(
         "FiraCode Nerdfont Mono",
         FontType.MSDF)
@@ -30,10 +30,11 @@ export class EditorApp extends App {
         })
 
         this.activeEditorBuffer.Buffer.subscribe((data: BufferFormat) => {
+
             for(let y = 0; y < data.length; y++) {
                 for(let x = 0; x < data[y].length; x++) {
-                    let item = data[y][x]
                     if(!this._QuadBuffer[y]) this._QuadBuffer[y] = []
+                    let item = data[y][x]
 
                     if(item) {
                         if(item.type === BufferFormat.BufferKeyType.STRING) {
@@ -46,7 +47,6 @@ export class EditorApp extends App {
                             }
                         }
                     }
-
                 }
 
                 if(data[y].length !== this._QuadBuffer[y].length) {
@@ -72,10 +72,12 @@ export class EditorApp extends App {
                 }
             }
         }
-
+        
+        // TODO: Cursor rendering breaks rendering?
         // this._CursorQuad.draw()
         // this._CursorQuad.charsize = this.fontsize
 
         // this._CursorQuad.location = this.activeEditorBuffer.Cursor
+        
     }
 }

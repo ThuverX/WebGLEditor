@@ -90,11 +90,9 @@ export class App {
 
         let dt = (t - this.previous_render_time) / 1000
 
-        // console.log('fps', 1 / dt)
-
         this.SetGeneralAttributes()
         this.render(t - this.start_time, dt)
-        
+
         this.previous_render_time = t
 
         requestAnimationFrame(this.loop.bind(this))
